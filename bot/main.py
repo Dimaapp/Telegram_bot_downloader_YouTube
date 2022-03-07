@@ -4,12 +4,34 @@ from aiogram.utils import executor
 import pafy
 
 from bot.config import TOKEN
+from bot.database import *
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
 
+def get_title_video(url: str):
+    vid = pafy.new(url)
+    title = vid.title
+    return title
+
+
+def get_author_video(url: str):
+    vid = pafy.new(url)
+    author = vid.author
+    return author
+
+
+def get_duration_video(url: str):
+    vid = pafy.new(url)
+    duration = vid.duration
+    return duration
+
+
 def get_list_video(url):
+    """Функція,яка створює нову сесію,по url-адресі знаходить відео в ютуб
+    і створює словник з доступиними розширеннями відео.
+    Повертає словник з розширеннями відео"""
     video = pafy.new(url=url)
     streams = video.streams
 
@@ -31,18 +53,26 @@ async def start_command(message: types.Message):
 async def help_command(message: types.Message):
     await message.reply("""Привіт! Ось команди,які я вмію виконувати:\n
     1)/help - Цю команду ти зараз читаєш\n
-    2)/start - Команда для запуску бота""")
+    2)/start - Команда для запуску бота \n
+    3)/search - Введіть після команди url-адресу відео,яке хочете скачти,
+    пілся цього через декілька секунд у вас буде список розширень цього відео""")
 
 
 @dp.message_handler(commands=['search'])
 async def search_video(message: types.Message):
     url = message.text.split()[-1]
-    dict_streams = get_list_video(url=url)
-    list_streams = []
-    for i in dict_streams.values():
-        list_streams.append(i)
-    first_one = list_streams.pop(0)
-    await message.reply(message.from_user.id, first_one)
+    title = get_title_video(url=url)
+    author = get_author_video(url=url)
+    duration = get_duration_video(url=url)
+    await message.reply(f'Назва відео - {title}\n'
+                        f'Автор - {author}\n'
+                        f'Тривалість - {duration}\n'
+                        f'Щоб завантажити введіть /download')
+
+
+@dp.message_handler(commands=['download'])
+async def download_video(message: types.Message):
+    pass
 
 
 if __name__ == '__main__':
