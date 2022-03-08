@@ -4,7 +4,6 @@ from aiogram.utils import executor
 import pafy
 
 from bot.config import TOKEN
-from bot.database import *
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
@@ -32,20 +31,10 @@ def get_url(url: str) -> str:
     return url
 
 
-def get_list_video(url):
-    """Функція,яка створює нову сесію,по url-адресі знаходить відео в ютуб
-    і створює словник з доступиними розширеннями відео.
-    Повертає словник з розширеннями відео"""
+def get_download_video(url):
     video = pafy.new(url=url)
-    streams = video.streams
-
-    available_streams = {}
-    count = 1
-
-    for stream in streams:
-        available_streams[count] = stream
-        count += 1
-    return available_streams
+    best_video = video.getbest()
+    return best_video.url_https
 
 
 @dp.message_handler(commands=['start'])
@@ -64,19 +53,24 @@ async def help_command(message: types.Message):
 
 @dp.message_handler(commands=['search'])
 async def search_video(message: types.Message):
-    url = message.text.split()[-1]
-    title = get_title_video(url=url)
-    author = get_author_video(url=url)
-    duration = get_duration_video(url=url)
-    await message.reply(f'Назва відео - {title}\n'
-                        f'Автор - {author}\n'
-                        f'Тривалість - {duration}\n'
-                        f'Щоб завантажити введіть /download')
+    try:
+        url = message.text.split()[-1]
+        title = get_title_video(url=url)
+        author = get_author_video(url=url)
+        duration = get_duration_video(url=url)
+        await message.reply(f'Назва відео - {title}\n'
+                            f'Автор - {author}\n'
+                            f'Тривалість - {duration}\n'
+                            f'Щоб завантажити введіть /download')
+    except ValueError:
+        await message.reply('Перевірте посилання')
 
 
 @dp.message_handler(commands=['download'])
 async def download_video(message: types.Message):
-    pass
+    url = message.text.split()[-1]
+    https = get_download_video(url=url)
+    await message.reply(https)
 
 
 if __name__ == '__main__':
