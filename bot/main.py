@@ -10,22 +10,26 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
 
-def get_title_video(url: str):
+def get_title_video(url: str) -> str:
     vid = pafy.new(url)
     title = vid.title
     return title
 
 
-def get_author_video(url: str):
+def get_author_video(url: str) -> str:
     vid = pafy.new(url)
     author = vid.author
     return author
 
 
-def get_duration_video(url: str):
+def get_duration_video(url: str) -> str:
     vid = pafy.new(url)
     duration = vid.duration
     return duration
+
+
+def get_url(url: str) -> str:
+    return url
 
 
 def get_list_video(url):
