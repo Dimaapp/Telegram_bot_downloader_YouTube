@@ -2,14 +2,15 @@ from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
 from aiogram.types import ParseMode
-from aiogram.utils.markdown import bold, code, italic, text
+from aiogram.utils.emoji import emojize
 import pafy
 import pyshorteners
-import emoji
+from os import getenv
 
-from bot.config import TOKEN
+from bot.keyboard import markup
 
-bot = Bot(token=TOKEN)
+bot_token = getenv('BOT_TOKEN')
+bot = Bot(token=bot_token)
 dp = Dispatcher(bot)
 urls = ' '
 
@@ -63,23 +64,24 @@ def short_link(link: str) -> str:
 
 @dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
-    await message.reply('Привіт!Я допоможу тобі скачати відео з ютуб')
+    await message.reply('Привіт!Я допоможу тобі скачати відео з ютуб', reply_markup=markup)
 
 
 @dp.message_handler(commands=['help'])
 async def help_command(message: types.Message):
-    await message.reply(text(emoji.emojize(""":wave:Привіт! Ось команди,які я вмію виконувати:\n
+    msg = emojize("""":wave:Привіт! Ось команди,які я вмію виконувати:
     1)/help - Цю команду ти зараз читаєш\n
     2)/start - Команда для запуску бота \n
-    3)/search - Після команди через пробіл введіть посилання на 
-      відео у форматі "youtube.com/..." для отримання інформації 
+    3)/search - Після команди через пробіл введіть посилання 
+    на відео у форматі "youtube.com/..." для отримання інформації 
       про відео і підтвердження скачування\n
     4)/download - Якщо ця команда вводиться після команди 
       search,то url можна не вказувати після неї,
       якщо ж вводиться сама по собі,тоді потрібно після команди 
       вставити url-адресу відео.Після цього буде отримане 
       посилання на скачування відео\n
-    5)/audio - Команда для скачування аудіо із відео""")))
+    5)/audio - Команда для скачування аудіо із відео""")
+    await message.reply(msg, parse_mode=ParseMode.MARKDOWN, reply_markup=markup)
 
 
 @dp.message_handler(commands=['search'])
